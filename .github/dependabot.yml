@@ -7,10 +7,8 @@ updates:
       interval: daily
     open-pull-requests-limit: 10
     reviewers:
-      - semyon492
-      - phakof
+      - t0nipit
     assignees:
-      - semyon492
-      - phakof
+      - t0nipit
     labels:
       - type:build
