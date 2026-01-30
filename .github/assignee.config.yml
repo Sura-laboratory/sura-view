@@ -3,13 +3,12 @@ addReviewers: true
 numberOfReviewers: 1
 
 reviewers:
-  - phakof
+  - t0nipit
 
 addAssignees: true
 
 assignees:
-  - semyon492
-  - phakof
+  - t0nipit
 
 numberOfAssignees: 1
 

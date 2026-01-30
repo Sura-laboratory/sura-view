@@ -1,5 +1,5 @@
 template: |
-  ## Changes
+  ## Changes Information
   $CHANGES
 change-template: '- **$TITLE** (#$NUMBER)'
 
@@ -11,8 +11,9 @@ categories:
   - title: '🚀  Features'
     labels:
       - 'feature'
+      - 'type:helper'
+      - 'type:exceptions'
       - 'type:interfaces'
-      - 'type:major'
   - title: '🐛 Bug Fixes'
     labels:
       - 'fix'
@@ -35,23 +36,23 @@ version-resolver:
     labels:
       - major
       - refactoring
-      - 'type:major'
   minor:
     labels:
       - feature
+      - 'type:feature'
       - minor
       - 'type:helper'
-      - dependencies
+      - 'type:exceptions'
+      - 'type:interfaces'
+      - 'theme:docs'
   patch:
     labels:
-      - type:build
       - bug
       - bugfix
       - hotfix
       - fix
-      - theme:docs
-      - type:compilers
-      - type:traits
-      - type:tests
       - analysis
+      - 'type:build'
+      - 'theme:documentation'
+      - 'theme:docs'
   default: patch
