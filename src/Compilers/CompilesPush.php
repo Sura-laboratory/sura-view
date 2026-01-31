@@ -95,7 +95,7 @@ trait CompilesPush
      *
      * @param string $txt Message to write on.
      */
-    protected function missingTranslation($txt): void
+    private function missingTranslation($txt)
     {
         if (!$this->missingLog) {
             return; // if there is not a file assigned then it skips saving.
