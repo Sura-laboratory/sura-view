@@ -62,7 +62,7 @@ trait Language
      *
      * @return string
      */
-    public function _n(string $phrase, string $phrases, $num = 0): string
+    public function _n($phrase, $phrases, $num = 0): string
     {
         if ((!\array_key_exists($phrase, static::$dictionary))) {
             $this->missingTranslation($phrase);
@@ -118,7 +118,7 @@ trait Language
      *
      * @param string $txt Message to write on.
      */
-    private function missingTranslation(string $txt): bool|string
+    private function missingTranslation(string $txt)
     {
         if (!$this->missingLog) {
             return true; // if there is not a file assigned then it skips saving.
