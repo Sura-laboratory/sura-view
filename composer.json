@@ -22,6 +22,9 @@
     "psr-4": {
       "Sura\\View\\": "src/",
       "Tests\\": "tests/"
-    }
+    },
+    "files": [
+      "src/functions.php"
+    ]
   }
 }
