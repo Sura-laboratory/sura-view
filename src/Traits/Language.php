@@ -1,13 +1,13 @@
 <?php
 declare(strict_types=1);
 
-namespace Sura\View;
+namespace Sura\View\Traits;
 
 /**
  * Trait Lang
  * @package Sura\View
  */
-trait Lang
+trait Language
 {
     /** @var string The path to the missing translations log file. If empty then every missing key is not saved. */
 //    public string $missingLog = '';

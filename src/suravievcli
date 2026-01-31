@@ -1,0 +1,29 @@
+<?php
+
+namespace Sura\View;
+
+// this code only runs on CLI but only if suravievcli.php is called directly and via command line.
+use eftec\bladeone\BladeOne;
+use Sura\Viev\Viev;
+
+if (!defined('PHPUNIT_COMPOSER_INSTALL') && !defined('__PHPUNIT_PHAR__')
+    && isset($_SERVER['PHP_SELF']) &&
+    !http_response_code() &&
+    (basename($_SERVER['PHP_SELF']) === 'suravievcli.php' || basename($_SERVER['PHP_SELF']) === 'suravievcli')
+) {
+    // we also excluded it if it is called by phpunit.
+    include_once __DIR__ . '/Viev.php';
+
+    $compilepath = Viev::getParameterCli('compilepath', null);
+    $templatepath = Viev::getParameterCli('templatepath', null);
+    if (!Viev::isAbsolutePath($compilepath)) {
+        $compilepath = getcwd() . '/' . $compilepath;
+    }
+    if (!Viev::isAbsolutePath($templatepath)) {
+        $templatepath = getcwd() . '/' . $templatepath;
+    }
+    $inst = new Viev($templatepath, $compilepath);
+    $inst->cliEngine();
+} else {
+    @http_response_code(404);
+}

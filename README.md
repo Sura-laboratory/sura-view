@@ -25,7 +25,7 @@ echo $blade->run("hello",array("variable1"=>"value1")); // it calls /views/hello
 Where `$views` is the folder where the views (templates not compiled) will be stored.
 `$cache` is the folder where the compiled files will be stored.
 
-In this example, the BladeOne opens the template **hello**. So in the views folder it should exist a file called **
+In this example, the View opens the template **hello**. So in the views folder it should exist a file called **
 hello.blade.php**
 
 views/hello.blade.php:
