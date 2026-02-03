@@ -4,29 +4,29 @@ declare(strict_types=1);
 namespace Sura\View\Traits;
 
 /**
- * Trait Lang
+ * Трейт Lang
+ * Предоставляет функциональность для локализации строк в приложении.
+ * 
  * @package Sura\View
  */
 trait Language
 {
-    /** @var string The path to the missing translations log file. If empty then every missing key is not saved. */
-//    public string $missingLog = '';
+    /** @var string Путь к файлу журнала отсутствующих переводов. Если пусто — отсутствующие ключи не сохраняются. */
+    public string $missingLog = '';
 
-    /** @var array Hold dictionary of translations */
-//    public static  $dictionary = [];
+    /** @var array Массив со словарём переводов */
     public static array $dictionary = [];
 
     /**
-     * Tries to translate the word if its in the array defined by View::$dictionary
-     * If the operation fails then, it returns the original expression without translation.
+     * Пытается перевести фразу, если она существует в массиве static::$dictionary.
+     * Если перевод не найден, возвращается исходная фраза без изменений.
      *
-     * @param $phrase
-     *
-     * @return string
+     * @param string $phrase Фраза для перевода
+     * @return string Переведённая строка или оригинальная, если перевод отсутствует
      */
     public function _e($phrase): string
     {
-        if ((!\array_key_exists($phrase, static::$dictionary))) {
+        if (!\array_key_exists($phrase, static::$dictionary)) {
             $this->missingTranslation($phrase);
             return $phrase;
         }
@@ -35,36 +35,37 @@ trait Language
     }
 
     /**
-     * It's the same than @_e, however it parses the text (using sprintf).
-     * If the operation fails then, it returns the original expression without translation.
+     * Аналогично _e(), но дополнительно обрабатывает строку с помощью sprintf().
+     * Позволяет вставлять переменные в переведённый текст.
+     * Если перевод не найден, возвращается оригинальная строка с подставленными значениями.
      *
-     * @param $phrase
-     *
-     * @return string
+     * @param string $phrase Фраза для перевода (может содержать плейсхолдеры, например %s)
+     * @return string Обработанная строка с подстановкой значений
      */
     public function _ef($phrase): string
     {
         $argv = \func_get_args();
         $r = $this->_e($phrase);
-        $argv[0] = $r; // replace the first argument with the translation.
+        $argv[0] = $r; // заменяем первую переменную на переведённую строку
         $result = sprintf(...$argv);
         $result = ($result === false) ? $r : $result;
         return $result;
     }
 
     /**
-     * if num is more than one then it returns the phrase in plural, otherwise the phrase in singular.
-     * Note: the translation should be as follows: $msg['Person']='Person' $msg=['Person']['p']='People'
+     * Возвращает форму слова в зависимости от числа (единственное или множественное число).
+     * Примечание: структура перевода должна быть такой: 
+     * $msg['Person'] = 'Человек'; 
+     * $msg['Person']['p'] = 'Люди';
      *
-     * @param string $phrase
-     * @param string $phrases
-     * @param int $num
-     *
-     * @return string
+     * @param string $phrase Форма единственного числа
+     * @param string $phrases Форма множественного числа
+     * @param int $num Число для определения формы
+     * @return string Переведённая строка в нужной форме
      */
     public function _n($phrase, $phrases, $num = 0): string
     {
-        if ((!\array_key_exists($phrase, static::$dictionary))) {
+        if (!\array_key_exists($phrase, static::$dictionary)) {
             $this->missingTranslation($phrase);
             return ($num <= 1) ? $phrase : $phrases;
         }
@@ -75,11 +76,10 @@ trait Language
     //<editor-fold desc="compile">
 
     /**
-     * Used for @_e directive.
+     * Компилирует директиву @_e в PHP-код.
      *
-     * @param $expression
-     *
-     * @return string
+     * @param string $expression Выражение, переданное в @_e
+     * @return string Скомпилированный PHP-код
      */
     protected function compile_e($expression): string
     {
@@ -87,11 +87,10 @@ trait Language
     }
 
     /**
-     * Used for @_ef directive.
+     * Компилирует директиву @_ef в PHP-код.
      *
-     * @param $expression
-     *
-     * @return string
+     * @param string $expression Выражение, переданное в @_ef
+     * @return string Скомпилированный PHP-код
      */
     protected function compile_ef($expression): string
     {
@@ -99,11 +98,10 @@ trait Language
     }
 
     /**
-     * Used for @_n directive.
+     * Компилирует директиву @_n в PHP-код.
      *
-     * @param $expression
-     *
-     * @return string
+     * @param string $expression Выражение, переданное в @_n
+     * @return string Скомпилированный PHP-код
      */
     protected function compile_n($expression): string
     {
@@ -113,15 +111,16 @@ trait Language
     //</editor-fold>
 
     /**
-     * Log a missing translation into the file $this->missingLog.<br>
-     * If the file is not defined, then it doesn't write the log.
+     * Записывает информацию об отсутствующем переводе в лог-файл.
+     * Если путь к файлу не задан ($this->missingLog), запись не производится.
      *
-     * @param string $txt Message to write on.
+     * @param string $txt Текст, который не был найден в словаре
+     * @return bool Всегда возвращает true после выполнения
      */
-    private function missingTranslation(string $txt)
+    private function missingTranslation(string $txt): bool
     {
         if (!$this->missingLog) {
-            return true; // if there is not a file assigned then it skips saving.
+            return true; // если файл не задан — пропускаем запись
         }
 
         $fz = @\filesize($this->missingLog);
@@ -131,7 +130,7 @@ trait Language
             $txt = \print_r($txt, true);
         }
 
-        // Rewrite file if more than 100000 bytes
+        // Перезаписываем файл, если он больше 100 КБ
         if ($fz > 100000) {
             $mode = 'w';
         }
