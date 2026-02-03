@@ -3,27 +3,29 @@
 namespace Sura\View;
 
 use Sura\View\Traits\Language;
-use Sura\View\Traits\Svg;
+use Sura\View\Traits\SvgHelper; // Подключаем новый трейт
 
 /**
- * Class myView
+ * Class Templates
  */
 class Templates extends View
 {
     use Language;
-    use Svg;
+    use SvgHelper; // Используем трейт для SVG
 
-    public function __construct($svgPath=null, $missingLog=null)
+    public function __construct()
     {
-        if (!$svgPath) {
-            // Укажите путь к SVG (относительный или абсолютный)
-            $this->svgPath = __DIR__ . '/../assets/icons';
-        }
+        parent::__construct($templatePath = null, $compiledPath = null, $mode = 0, $commentMode = 0);
 
-        if ($missingLog) {
-            // Если используется missingLog из Language
-            $this->missingLog = __DIR__ . '/../logs/missing.log';
-        }
+        $this->SvgHelper();
 
+        // Явно вызываем инициализацию трейта, если нужно (опционально, но безопасно)
+        // Метод `SvgHelper()` будет вызван автоматически благодаря View,
+        // но можно добавить дополнительную логику при необходимости
+
+        // Например, переопределить путь к SVG по умолчанию
+        // $this->svgDirectory = '/assets/icons';
+
+        // Можно оставить пустым, если всё работает — просто для ясности
     }    
 }

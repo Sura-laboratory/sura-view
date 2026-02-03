@@ -34,3 +34,21 @@ views/hello.blade.php:
 <h1>Title</h1>
 {{$variable1}}
 ```
+
+## SVG Support
+
+The package now supports inline SVG rendering via the `@svg` directive.
+
+### Usage
+
+```blade
+@svg('icon-name', ['class' => 'icon', 'width' => 24, 'height' => 24])
+```
+
+This will render the SVG from `public/assets/svg/icon-name.svg` with the specified attributes.
+
+You can customize the default SVG directory by setting:
+
+```php
+$blade->svgDirectory = '/path/to/svg';
+```
