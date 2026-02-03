@@ -13,9 +13,9 @@ class Templates extends View
     use Language;
     use SvgHelper; // Используем трейт для SVG
 
-    public function __construct()
+    public function __construct($templatePath = null, $compiledPath = null, $mode = 0, $commentMode = 0)
     {
-        parent::__construct($templatePath = null, $compiledPath = null, $mode = 0, $commentMode = 0);
+        parent::__construct($templatePath, $compiledPath, $mode, $commentMode);
 
         $this->SvgHelper();
 

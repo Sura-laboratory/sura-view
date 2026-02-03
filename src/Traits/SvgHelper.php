@@ -63,7 +63,12 @@ trait SvgHelper
             libxml_clear_errors();
         }
 
-        return trim($svgContent);
+        $svgString = trim($svgContent);
+        // Удаляем переносы строк и кодируем
+        $dataUrl = 'data:image/svg+xml;utf8,' . urlencode($svgString);
+
+        return '<img src="' . $dataUrl . '" alt="SVG Image">';
+        // return trim($svgContent);
     }
 
     /**
@@ -77,7 +82,6 @@ trait SvgHelper
     {
         $directory = static::$svgDirectory;
         $path = rtrim($_SERVER['DOCUMENT_ROOT'], '/') . '/' . ltrim($directory, '/') . '/' . $name . '.svg';
-        var_dump($path);
         return $this->svg($path, $attributes);
     }
 }
