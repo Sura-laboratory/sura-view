@@ -32,6 +32,7 @@ class View
         Compilers\CompilesLoop,
         Compilers\CompilesPush,
         Compilers\CompilesSetGet,
+        Compilers\CompilesSvg,
         Compilers\CompilesString;
 
     public const VERSION = '3.0.0';
