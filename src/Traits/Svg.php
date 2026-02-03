@@ -1,77 +1,88 @@
 <?php
-declare(strict_types=1);
 
 namespace Sura\View\Traits;
 
 /**
  * Trait Svg
- * @package Sura\View\Traits
+ * Позволяет вставлять SVG-иконки в шаблоны через метод svg() и директиву @svg()
  */
 trait Svg
 {
-    /** @var string Корневая директория для SVG файлов (например: resources/svg/) */
+    /** @var string Путь к папке с SVG-файлами */
     public string $svgPath = '';
 
     /** @var array Кэш загруженных SVG */
     private static array $svgCache = [];
 
     /**
-     * Возвращает содержимое SVG файла по имени.
-     * Если файл не найден, возвращает пустую строку или плейсхолдер.
+     * Возвращает содержимое SVG-файла как строку с добавленными атрибутами.
      *
-     * @param string $name Имя SVG (например: 'icons/user')
-     * @param array $attrs Атрибуты SVG тега (например: ['class' => 'w-6 h-6', 'fill' => 'red'])
-     *
-     * @return string
+     * @param string $name Имя файла без расширения (например: 'user')
+     * @param array $attrs Атрибуты: class, width, height и т.д.
+     * @return string HTML <svg> или пустая строка
      */
     public function svg(string $name, array $attrs = []): string
     {
-        $path = rtrim($this->svgPath, '/\\') . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $name) . '.svg';
-
-        if (!file_exists($path)) {
-            return '<!-- SVG not found: ' . htmlspecialchars($name) . ' -->';
+        if (!$name) {
+            return '';
         }
 
-        // Кэшируем содержимое SVG
-        if (!isset(self::$svgCache[$path])) {
-            $content = file_get_contents($path);
-            if ($content === false) {
-                return '';
-            }
-            // Удаляем XML декларацию и DOCTYPE, оставляем только <svg>...
-            $content = preg_replace('/^<\?xml.*?\?>|<!DOCTYPE[^>]*>/is', '', $content);
-            self::$svgCache[$path] = trim($content);
+        $key = $name . '|' . md5(serialize($attrs));
+        if (isset(self::$svgCache[$key])) {
+            return self::$svgCache[$key];
         }
 
-        $svg = self::$svgCache[$path];
+        $file = rtrim($this->svgPath, '/') . '/' . $name . '.svg';
+        if (!file_exists($file)) {
+            $this->missingSvg($name);
+            return '';
+        }
 
-        // Парсим атрибуты
+        $content = file_get_contents($file);
+        if ($content === false) {
+            $this->missingSvg($name);
+            return '';
+        }
+
+        // Удаляем XML и DOCTYPE
+        $content = preg_replace('/<\?xml[^>]*\?'.'>/', '', $content);
+        $content = preg_replace('/<!DOCTYPE[^>]*>/', '', $content);
+
+        if (!preg_match('#<svg[^>]*>.*?</svg>#is', $content, $matches)) {
+            $this->missingSvg($name);
+            return '';
+        }
+
+        $svg = $matches[0];
+
+        // Атрибуты по умолчанию
+        $defaultAttrs = [
+            'class' => 'svg-icon',
+            'aria-hidden' => 'true',
+            'role' => 'img',
+        ];
+        $attributes = array_merge($defaultAttrs, $attrs);
+
+        // Формируем строку атрибутов
         $attrString = '';
-        foreach ($attrs as $key => $value) {
+        foreach ($attributes as $key => $value) {
             $attrString .= ' ' . htmlspecialchars($key) . '="' . htmlspecialchars($value) . '"';
         }
 
-        // Вставляем атрибуты внутрь тега <svg>
-        $svg = preg_replace(
-            '/^<svg\b(?<attrs>[^>]*)>/i',
-            '<svg${attrs}' . $attrString . '>',
-            $svg,
-            1
-        );
+        // Добавляем атрибуты в тег <svg>
+        $svg = preg_replace('/<svg\b/i', '<svg' . $attrString, $svg, 1);
 
+        self::$svgCache[$key] = $svg;
         return $svg;
     }
 
-    //<editor-fold desc="Compile Directives">
+    //<editor-fold desc="compile">
 
     /**
-     * Компилирует директиву @svg('icon-name')
-     * Поддерживает второй параметр: массив атрибутов
+     * Компилирует директиву @svg('name', [...]) в PHP-код
      *
-     * Пример: @svg('icons/user', ['class' => 'w-6 h-6'])
-     *
-     * @param string $expression Например: "('icons/user')" или "('icons/user', ['class' => '...'])"
-     * @return string
+     * @param string $expression Например: "('user', ['class' => 'w-6'])"
+     * @return string Скомпилированный PHP-выражение
      */
     protected function compile_svg($expression): string
     {
@@ -79,4 +90,25 @@ trait Svg
     }
 
     //</editor-fold>
+
+    /**
+     * Вызывается при отсутствии SVG-файла
+     *
+     * @param string $name Имя отсутствующего файла
+     */
+    private function missingSvg(string $name): void
+    {
+        if (!$this->missingLog) {
+            return;
+        }
+
+        $message = "Missing SVG: {$name}.svg";
+
+        $fz = @filesize($this->missingLog);
+        $mode = $fz > 100000 ? 'w' : 'a'; // Перезапись при большом логе
+
+        $fp = fopen($this->missingLog, $mode);
+        fwrite($fp, $message . "\n");
+        fclose($fp);
+    }
 }
