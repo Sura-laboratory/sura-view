@@ -34,4 +34,23 @@ trait CompilesLanguage
     {
         return $this->phpTag . 'endif; ?>';
     }
+
+    /**
+     * Компилирует @assets(...)
+     *
+     * Примеры:
+     *   @assets('css/app.css')
+     *   @assets(['css/app.css', 'js/app.js'])
+     *   @assets($assetList)
+     *
+     * Генерирует: echo assets('css/app.css');
+     * или: echo assets(['css/app.css', 'js/app.js']);
+     *
+     * @param string $expression
+     * @return string
+     */
+    protected function compileAssets($expression): string
+    {
+        return $this->phpTag . "echo assets$expression; ?>";
+    }    
 }
