@@ -18,38 +18,45 @@ trait Language
     public static array $dictionary = [];
 
     /**
-     * Пытается перевести фразу, если она существует в массиве static::$dictionary.
-     * Если перевод не найден, возвращается исходная фраза без изменений.
-     *
-     * @param string $phrase Фраза для перевода
-     * @return string Переведённая строка или оригинальная, если перевод отсутствует
+     * Переводит фразу. Поддерживает:
+     * - иерархию: 'home.title'
+     * - замены: @_e('footer.copyright', ['year' => 2025])
      */
-    public function _e($phrase): string
+    public function _e($phrase, array $replacements = []): string
     {
-        if (!\array_key_exists($phrase, static::$dictionary)) {
-            $this->missingTranslation($phrase);
-            return $phrase;
+        // Поиск по точечному ключу
+        $value = $this->getNestedValue(static::$dictionary, $phrase);
+
+        // Если не найдено — проверяем как плоский ключ
+        if ($value === null && \array_key_exists($phrase, static::$dictionary)) {
+            $value = static::$dictionary[$phrase];
         }
 
-        return static::$dictionary[$phrase];
+        if ($value === null) {
+            $this->missingTranslation($phrase);
+            $value = $phrase;
+        }
+
+        // Применяем замены: :year → 2025
+        foreach ($replacements as $k => $v) {
+            $value = str_replace(":$k", $v, $value);
+        }
+
+        return $value;
     }
 
     /**
-     * Аналогично _e(), но дополнительно обрабатывает строку с помощью sprintf().
-     * Позволяет вставлять переменные в переведённый текст.
-     * Если перевод не найден, возвращается оригинальная строка с подставленными значениями.
-     *
-     * @param string $phrase Фраза для перевода (может содержать плейсхолдеры, например %s)
-     * @return string Обработанная строка с подстановкой значений
+     * Аналог _e(), но с sprintf() (если нужно)
      */
     public function _ef($phrase): string
     {
         $argv = \func_get_args();
-        $r = $this->_e($phrase);
-        $argv[0] = $r; // заменяем первую переменную на переведённую строку
-        $result = sprintf(...$argv);
-        $result = ($result === false) ? $r : $result;
-        return $result;
+        $replacements = \is_array($argv[1] ?? null) ? $argv[1] : [];
+        $r = $this->_e($phrase, $replacements);
+        unset($argv[0]);
+        $argv[0] = $r;
+        $result = @sprintf(...$argv);
+        return $result ?: $r;
     }
 
     /**
@@ -140,4 +147,27 @@ trait Language
         \fclose($fp);
         return true;
     }
+
+    /**
+     * Получает значение из вложенного массива по ключу с точкой.
+     * Пример: getNestedValue($arr, 'home.features.messaging')
+     *
+     * @param array $data
+     * @param string $key
+     * @return string|null
+     */
+    private function getNestedValue(array $data, string $key): ?string
+    {
+        $keys = explode('.', $key);
+
+        foreach ($keys as $segment) {
+            if (is_array($data) && array_key_exists($segment, $data)) {
+                $data = $data[$segment];
+            } else {
+                return null;
+            }
+        }
+
+        return is_string($data) ? $data : null;
+    }    
 }
