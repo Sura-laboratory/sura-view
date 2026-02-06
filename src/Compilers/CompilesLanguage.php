@@ -52,5 +52,5 @@ trait CompilesLanguage
     protected function compileAssets($expression): string
     {
         return $this->phpTag . "echo assets$expression; ?>";
-    }    
+    }
 }
